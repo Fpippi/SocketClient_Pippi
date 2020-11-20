@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace SocketClient_Pippi
 {
@@ -41,6 +42,27 @@ namespace SocketClient_Pippi
                 Console.WriteLine("Endpoint del server "+Address.ToString()+ " "+ NPort);
 
                 client.Connect(Address,NPort);
+
+
+                byte[] buff = new byte[128];
+                string sendString = "";
+                string reciveString = "";
+                int recivebytes = 0;
+
+                while (true)
+                {
+                    Console.WriteLine("Manda un messaggio");
+                    sendString = Console.ReadLine();
+                    buff = Encoding.ASCII.GetBytes(sendString);
+                    client.Send(buff);
+                    if (sendString.ToUpper().Trim()=="QUIT")
+                    {
+                        break;
+                    }
+                    Array.Clear(buff, 0, buff.Length);
+                    recivebytes = client.Receive(buff);
+                    Console.WriteLine("SI: "+ reciveString);
+                }
             }
             catch (Exception)
             {
