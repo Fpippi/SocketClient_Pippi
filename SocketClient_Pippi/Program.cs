@@ -44,7 +44,6 @@ namespace SocketClient_Pippi
             }
             catch (Exception)
             {
-
                 Console.WriteLine("C'è stato un problema");
             }
         }
