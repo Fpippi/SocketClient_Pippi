@@ -10,64 +10,91 @@ namespace SocketClient_Pippi
         static void Main(string[] args)
         {
 
-            Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream,ProtocolType.Tcp);
+            // Dichiarazione Socket Client
+            Socket client = null;
+            client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            // Dichiarazione EndPoint del server
+            IPAddress ipAddr = null;
+            string strIPAddress = "";
+            string strPort = "";
+            int nPort = 0;
 
-            string strlIpAddress = "";
-            string strlPorta = "";
-            IPAddress Address = null;
-            int NPort;
+
+            //Dichiarazione Variabili per comunicare con il server
+            string sendString = "";
+            string receivedString = "";
+            byte[] sendBuff = new byte[128];
+            byte[] recvBuff = new byte[128];
+            int nReceivedBytes = 0;
             try
             {
-                Console.WriteLine("Inserisci ip del server");
-                strlIpAddress = Console.ReadLine();
-                Console.WriteLine("Inserisci numero porta");
-                strlPorta = Console.ReadLine();
-                if (!IPAddress.TryParse(strlIpAddress.Trim(),out Address))
+                // Settagio da Console dell'EndPoint
+                Console.WriteLine("Benvenuto nel Client Socket");
+                Console.Write("IP del Server: ");
+                strIPAddress = Console.ReadLine();
+                Console.Write("Porta del Server: ");
+                strPort = Console.ReadLine();
+
+                if (!IPAddress.TryParse(strIPAddress.Trim(), out ipAddr))
                 {
-                    Console.WriteLine("Ip non è valido");
+                    Console.Write("IP non valido.");
                     return;
                 }
-                if(!int.TryParse(strlPorta,out NPort))
+                if (!int.TryParse(strPort, out nPort))
                 {
-                    Console.WriteLine("Porta non è valida");
+                    Console.Write("Porta non valida.");
                     return;
                 }
-                if(NPort<=0||NPort>= 65536)
+                if (nPort <= 0 || nPort >= 65535)
                 {
-                    Console.WriteLine("Porta non è valida");
+                    Console.Write("Porta non valida.");
                     return;
                 }
+                Console.WriteLine("Endpoint: " + ipAddr.ToString() + " " + nPort);
 
+                // Connessione al server
+                client.Connect(ipAddr, nPort);
 
-                Console.WriteLine("Endpoint del server "+Address.ToString()+ " "+ NPort);
-
-                client.Connect(Address,NPort);
-
-
-                byte[] buff = new byte[128];
-                string sendString = "";
-                string reciveString = "";
-                int recivebytes = 0;
+                //Inizio chat con il server
+                Console.WriteLine("Chatta con il server. ");
 
                 while (true)
                 {
-                    Console.WriteLine("Manda un messaggio");
                     sendString = Console.ReadLine();
-                    buff = Encoding.ASCII.GetBytes(sendString);
-                    client.Send(buff);
-                    if (sendString.ToUpper().Trim()=="QUIT")
+                    sendBuff = Encoding.ASCII.GetBytes(sendString);
+                    client.Send(sendBuff);
+
+                    if (sendString.ToUpper().Trim() == "QUIT")
                     {
+
                         break;
                     }
-                    Array.Clear(buff, 0, buff.Length);
-                    recivebytes = client.Receive(buff);
-                    Console.WriteLine("SI: "+ reciveString);
+                    //Pulisco il buffer e ricevo il messaggio
+                    Array.Clear(recvBuff, 0, recvBuff.Length);
+                    nReceivedBytes = client.Receive(recvBuff);
+                    receivedString = Encoding.ASCII.GetString(recvBuff);
+                    Console.WriteLine("S: " + receivedString);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Console.WriteLine("C'è stato un problema");
+                Console.WriteLine(ex.Message);
             }
+            finally
+            {
+                /* In ogni occasione chiudo la connessione per sicurezza */
+                if (client != null)
+                {
+                    if (client.Connected)
+                    {
+                        client.Shutdown(SocketShutdown.Both);//disabilita la send e receive
+                    }
+                    client.Close();
+                    client.Dispose();
+                }
+            }
+            Console.WriteLine("Premi Enter per chiudere...");
+            Console.ReadLine();
         }
     }
 }
