@@ -73,7 +73,7 @@ namespace SocketClient_Pippi
                     Array.Clear(recvBuff, 0, recvBuff.Length);
                     nReceivedBytes = client.Receive(recvBuff);
                     receivedString = Encoding.ASCII.GetString(recvBuff);
-                    Console.WriteLine("S: " + receivedString);
+                    Console.WriteLine("Pippone: " + receivedString);
                 }
             }
             catch (Exception ex)
